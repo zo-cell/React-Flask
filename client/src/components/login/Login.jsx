@@ -56,7 +56,7 @@ const Login = (props) => {
 
   // getting Workers Data:
   useEffect(() => {
-    fetch('http://127.0.0.1:5000/api/workers/get', {
+    fetch('https://react-flask-1.onrender.com/api/workers/get', {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     })
@@ -125,7 +125,7 @@ const Login = (props) => {
 // };
 
 function sendAction(action, fn, ln, email, access) {
-  fetch('http://127.0.0.1:5000/notify_frontend_action', {
+  fetch('https://react-flask-1.onrender.com/notify_frontend_action', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -157,7 +157,7 @@ function sendAction(action, fn, ln, email, access) {
     console.log(image);
     PassingEmail(email);
     PassingImage(image);
-    fetch('http://127.0.0.1:5000/google_login', {
+    fetch('https://react-flask-1.onrender.com/google_login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -245,7 +245,7 @@ function sendAction(action, fn, ln, email, access) {
 
   const [branches, setBranches] = useState([]);
   useEffect(() => {
-    fetch('http://127.0.0.1:5000/api/branches/get', {
+    fetch('https://react-flask-1.onrender.com/api/branches/get', {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     })
