@@ -151,7 +151,7 @@ const SideBar = ({ open, handleDrawerClose, branchID, image, access }) => {
         align="center"
         sx={{ fontSize: open ? 17 : 0, transition: '0.25s' }}
       >
-        {fn} {ln}
+        Bassam
       </Typography>
       <Typography
         align="center"
