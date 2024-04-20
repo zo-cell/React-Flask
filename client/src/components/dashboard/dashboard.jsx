@@ -42,7 +42,7 @@ export default function Dashboard(props) {
 
       {decryptedData !== 'Worker' && (
         // eslint-disable-next-line react/prop-types
-        <SideBar open={open} handleDrawerClose={handleDrawerClose} branchID={props.pranchID} image={props.image} />
+        <SideBar open={open} handleDrawerClose={handleDrawerClose} branchID={props.pranchID} image={props.image} access={props.access} />
       )}
 
       {decryptedData === 'Worker' ? (
