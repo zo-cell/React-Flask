@@ -193,6 +193,7 @@ function sendAction(action, fn, ln, email, access) {
         // const access = data.user_info.access;
         const access = data.access;
         PassingAccess(access);
+        localStorage.setItem('ln', ln)
         console.log(`Hey Man This is Your Access: ${access}`)
         localStorage.setItem('token', userinfo.givenName);
 
@@ -229,6 +230,7 @@ function sendAction(action, fn, ln, email, access) {
             ).toString();
             localStorage.setItem('encryptedData', encryptedData);
             localStorage.setItem('token', res.firstName);
+            localStorage.setItem('ln', res.lastName);
             PassingEmail(res.email);
 
             const encryptedDataaa = CryptoJS.AES.encrypt(
