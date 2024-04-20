@@ -1,5 +1,15 @@
 services:
   - name: my-react-flask-app
     env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: python app.py
+    buildCommand: |
+      cd React-Flask/client
+      npm install
+      npm run build
+      cd ..
+      pip install -r requirements.txt
+    startCommand: gunicorn server:app
+    envVars:
+      - key: GOOGLE_CLIENT_ID
+        value: 986300498034-gdgohhka0scfv04q82uoogb6qrso3fuk.apps.googleusercontent.com
+      - key: GOOGLE_CLIENT_SECRET
+        value: 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
