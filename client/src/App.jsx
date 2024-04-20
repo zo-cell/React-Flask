@@ -332,7 +332,7 @@ const MyComponent = () => {
                             Access === 'Manager' ||
                             Access === 'Accountant' ||
                             Access === 'Worker' ? (
-                              <Dashboard branchID={branch.id} status={status} image={image} />
+                              <Dashboard branchID={branch.id} status={status} image={image} access={Access} />
                             ) : (
                               <NoAccess />
                             )
