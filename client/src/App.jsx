@@ -1,8 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/prop-types */
 import { useState, useEffect } from 'react';
-import UserList from './components/UserList';
-import Form from './components/Form';
+
 // import Header1 from './components/layout/1-header/Header1';
 // import Header2 from './components/layout/1-header/Header2';
 // import Header3 from './components/layout/1-header/Header3';
@@ -24,7 +23,7 @@ import Team from './components/dashboard/page/team/Team';
 import DashHome from './components/dashboard/page/dashHome/DashHome';
 import Invoices from './components/dashboard/page/orders/Orders';
 import Calendar from './components/dashboard/page/calendar/Calendar';
-import FAQPage from './components/dashboard/page/faqPage/FAQPage';
+
 import BarChart from './components/dashboard/page/barChart/BarChart';
 import PieChart from './components/dashboard/page/pieChart/PieChart';
 import LineChart from './components/dashboard/page/lineChart/LineChart';
