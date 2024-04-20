@@ -80,7 +80,7 @@ const Drawer = styled(MuiDrawer, {
 }));
 
 // eslint-disable-next-line react/prop-types
-const SideBar = ({ open, handleDrawerClose, branchID, image }) => {
+const SideBar = ({ open, handleDrawerClose, branchID, image, access }) => {
   const Array1 = [
     { text: 'Dashboard', icon: <HomeOutlined />, path: '' },
     { text: 'Manage Team', icon: <PeopleOutline />, path: 'team' },
@@ -112,6 +112,8 @@ const SideBar = ({ open, handleDrawerClose, branchID, image }) => {
 
   const img = localStorage.getItem('avatar');
   const avatar = img;
+  const fn = localStorage.getItem('token');
+  const ln = localStorage.getItem('ln');
 
   const theme = useTheme();
   const nav = useNavigate();
@@ -149,7 +151,7 @@ const SideBar = ({ open, handleDrawerClose, branchID, image }) => {
         align="center"
         sx={{ fontSize: open ? 17 : 0, transition: '0.25s' }}
       >
-        Shady Samy
+        {fn} {ln}
       </Typography>
       <Typography
         align="center"
@@ -159,7 +161,7 @@ const SideBar = ({ open, handleDrawerClose, branchID, image }) => {
           color: theme.palette.info.main,
         }}
       >
-        Admin
+        {access}
       </Typography>
 
       <Divider />
