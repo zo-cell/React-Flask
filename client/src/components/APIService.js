@@ -1,7 +1,7 @@
 export default class APIService {
   // Members Cruds:
   static UpdateMember(id, info) {
-    return fetch(`http://127.0.0.1:5000/api/update/${id}/`, {
+    return fetch(`https://react-flask-1.onrender.com/api/update/${id}/`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(info),
@@ -9,7 +9,7 @@ export default class APIService {
   }
 
   static InsertUser(info) {
-    return fetch('http://127.0.0.1:5000/api/signUp', {
+    return fetch('https://react-flask-1.onrender.com/api/signUp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(info),
@@ -17,7 +17,7 @@ export default class APIService {
   }
 
   static login(info) {
-    return fetch('http://127.0.0.1:5000/api/login', {
+    return fetch('https://react-flask-1.onrender.com/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(info),
@@ -25,7 +25,7 @@ export default class APIService {
   }
 
   static signOut() {
-    return fetch('http://127.0.0.1:5000/api/signout', {
+    return fetch('https://react-flask-1.onrender.com/api/signout', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ export default class APIService {
   }
 
   static DeleteUser(id) {
-    return fetch(`http://127.0.0.1:5000/api/delete/${id}/`, {
+    return fetch(`https://react-flask-1.onrender.com/api/delete/${id}/`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
     });
@@ -53,7 +53,7 @@ export default class APIService {
   // Workers Cruds:
 
   static InsertWorker(info) {
-    return fetch('http://127.0.0.1:5000/api/workers/signUp', {
+    return fetch('https://react-flask-1.onrender.com/api/workers/signUp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(info),
@@ -61,7 +61,7 @@ export default class APIService {
   }
 
   static WorkerLogin(info) {
-    return fetch('http://127.0.0.1:5000/api/workers/login', {
+    return fetch('https://react-flask-1.onrender.com/api/workers/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(info),
@@ -69,7 +69,7 @@ export default class APIService {
   }
 
   static UpdateWorker(id, info) {
-    return fetch(`http://127.0.0.1:5000/api/workers/update/${id}/`, {
+    return fetch(`https://react-flask-1.onrender.com/api/workers/update/${id}/`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(info),
@@ -77,7 +77,7 @@ export default class APIService {
   }
 
   static DeleteWorker(id) {
-    return fetch(`http://127.0.0.1:5000/api/workers/delete/${id}/`, {
+    return fetch(`https://react-flask-1.onrender.com/api/workers/delete/${id}/`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
     });
@@ -87,7 +87,7 @@ export default class APIService {
   // Workers Cruds:
 
   static InsertOrder(info) {
-    return fetch('http://127.0.0.1:5000/api/AddOrders', {
+    return fetch('https://react-flask-1.onrender.com/api/AddOrders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(info),
@@ -96,7 +96,7 @@ export default class APIService {
 
 
   static GetOrder(id) {
-    return fetch(`http://127.0.0.1:5000/api/order/get/${id}/`, {
+    return fetch(`https://react-flask-1.onrender.com/api/order/get/${id}/`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     }).then((response) => response.json());
@@ -104,7 +104,7 @@ export default class APIService {
 
 
   static UpdateOrder(id, info) {
-    return fetch(`http://127.0.0.1:5000/api/orders/update/${id}/`, {
+    return fetch(`https://react-flask-1.onrender.com/api/orders/update/${id}/`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(info),
@@ -112,7 +112,7 @@ export default class APIService {
   }
 
   static DeleteOrder(id) {
-    return fetch(`http://127.0.0.1:5000/api/order/delete/${id}/`, {
+    return fetch(`https://react-flask-1.onrender.com/api/order/delete/${id}/`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
     });
@@ -121,7 +121,7 @@ export default class APIService {
   // ==================================================================
   // Jobs Cruds:
   static DeleteJob(id) {
-    return fetch(`http://127.0.0.1:5000/api/Jobs/delete/${id}/`, {
+    return fetch(`https://react-flask-1.onrender.com/api/Jobs/delete/${id}/`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
     });
@@ -132,7 +132,7 @@ export default class APIService {
   // Service Cruds:
 
   static UpdateService(id, info) {
-    return fetch(`http://127.0.0.1:5000/api/service/update/${id}/`, {
+    return fetch(`https://react-flask-1.onrender.com/api/service/update/${id}/`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(info),
@@ -142,7 +142,7 @@ export default class APIService {
 
 
   static DeleteService(id) {
-    return fetch(`http://127.0.0.1:5000/api/service/delete/${id}/`, {
+    return fetch(`https://react-flask-1.onrender.com/api/service/delete/${id}/`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
     });
@@ -153,7 +153,7 @@ export default class APIService {
   // Customers Cruds:
 
   static InsertCustomer(info) {
-    return fetch('http://127.0.0.1:5000/api/AddCustomers', {
+    return fetch('https://react-flask-1.onrender.com/api/AddCustomers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(info),
@@ -162,7 +162,7 @@ export default class APIService {
 
 
   static UpdateCustomer(id, info) {
-    return fetch(`http://127.0.0.1:5000/api/customers/update/${id}/`, {
+    return fetch(`https://react-flask-1.onrender.com/api/customers/update/${id}/`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(info),
@@ -172,7 +172,7 @@ export default class APIService {
 
 
   static DeleteCustomer(id) {
-    return fetch(`http://127.0.0.1:5000/api/customers/delete/${id}/`, {
+    return fetch(`https://react-flask-1.onrender.com/api/customers/delete/${id}/`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
     });
@@ -182,7 +182,7 @@ export default class APIService {
   // Branches Cruds:
 
   static InsertBranch(info) {
-    return fetch('http://127.0.0.1:5000/api/AddBranch', {
+    return fetch('https://react-flask-1.onrender.com/api/AddBranch', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(info),
