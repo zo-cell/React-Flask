@@ -13,7 +13,7 @@ from werkzeug.utils import secure_filename
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from datetime import date as Date
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
@@ -211,6 +211,7 @@ class Workers(db.Model):
   lastName = db.Column(db.String(80), nullable=False)
   email = db.Column(db.String(100), nullable=False)
   phone = db.Column(db.String(100), nullable=False)
+  finishID = db.Column(db.String(100), nullable=False)
   access = db.Column(db.String(80), nullable=False)
   password = db.Column(db.String(100), nullable=False)
   Jobs = relationship("Jobs")
@@ -218,11 +219,12 @@ class Workers(db.Model):
   status = db.Column(db.String(50), nullable=False)
 
 
-def __init__(self, firstName, lastName, email, phone, access, password, branchID, status):
+def __init__(self, firstName, lastName, email, phone, finishID, access, password, branchID, status):
     self.firstName = firstName
     self.lastName = lastName
     self.email = email
     self.phone = phone
+    self.finishID = finishID
     self.access = access
     self.password = password
     self.branchID = branchID
@@ -232,7 +234,7 @@ def __init__(self, firstName, lastName, email, phone, access, password, branchID
 # Workers schema:
 class WorkersSchema(ma.Schema):
   class Meta:
-    fields = ('id', 'firstName', 'lastName', 'email', 'phone', 'access', 'password', 'branchID', 'status')
+    fields = ('id', 'firstName', 'lastName', 'email', 'phone', 'finishID', 'access', 'password', 'branchID', 'status')
 
 worker_schema =  WorkersSchema()
 workers_schema = WorkersSchema(many=True)
@@ -290,6 +292,32 @@ job_schema =  JobsSchema()
 jobs_schema = JobsSchema(many=True)
 
 
+
+
+# Completed Job table:
+class CompletedJob(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  worker_id = db.Column(db.Integer)
+  job_id = db.Column(db.Integer)
+  branch_id = db.Column(db.Integer)
+  completion_date = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+
+def __init__(self, worker_id, job_id, branch_id, completion_date):
+  self.worker_id =  worker_id
+  self.job_id= job_id
+  self.branch_id = branch_id
+  self.completion_date = completion_date
+
+
+
+class CompletedJobSchema(ma.Schema):
+  class Meta:
+    fields = ('id', 'worker_id', 'job_id', 'branch_id', 'completion_date')
+
+completedJob_schema =  CompletedJobSchema()
+completedJobs_schema = CompletedJobSchema(many=True)
 
 
 
@@ -1095,6 +1123,7 @@ def add_worker():
   lastName = data.get("lastname")
   email = data.get('email')
   phone = data.get('phone')
+  finishID = data.get('finishID')
   access = "Worker"
   password = data.get('password')
   branchID = data.get('branchID')
@@ -1103,7 +1132,7 @@ def add_worker():
 
   existed_worker = Workers.query.filter_by(email=email).first()
   if existed_worker and existed_worker.branchID != branchID :
-    new_worker = Workers(firstName=firstName, lastName=lastName, email=email, phone=phone, access=access, password=existed_worker.password, branchID=branchID, status="Logged Out")
+    new_worker = Workers(firstName=firstName, lastName=lastName, email=email, phone=phone, finishID=finishID, access=access, password=existed_worker.password, branchID=branchID, status="Logged Out")
     db.session.add(new_worker)
     db.session.commit()
 
@@ -1112,7 +1141,7 @@ def add_worker():
 
   else:
     hashed_password = bcrypt.generate_password_hash(password)
-    new_worker = Workers(firstName=firstName, lastName=lastName, email=email, phone=phone, access=access, password=hashed_password, branchID=branchID, status="Logged Out")
+    new_worker = Workers(firstName=firstName, lastName=lastName, email=email, phone=phone, finishID=finishID, access=access, password=hashed_password, branchID=branchID, status="Logged Out")
     db.session.add(new_worker)
     db.session.commit()
 
@@ -1193,6 +1222,7 @@ def update_worker(id):
   lastName = data.get('updatedLastName')
   email = data.get('updatedEmail')
   phone = data.get("updatedPhone")
+  password = data.get('updatedPassword')
   # jops = old_worker_data.jops
   #can't update check column so we just let it stay the same
 
@@ -1227,6 +1257,10 @@ def update_worker(id):
   worker_to_update.lastName = lastName
   worker_to_update.email = email
   worker_to_update.phone = phone
+  if not password:
+    worker_to_update.password = worker_to_update.password
+  else:
+    worker_to_update.password = password
   # worker_to_update.jops = jops
 
   worker_to_update.access = access
@@ -1235,6 +1269,85 @@ def update_worker(id):
   db.session.commit()
 
   return  worker_schema.jsonify(worker_to_update)
+
+
+
+# ===============================================================================================================
+
+#                             Workers ForgetPassword Route APi
+@app.route('/forgot_password', methods=['POST'])
+def forgot_password():
+    email = request.json.get('email')
+    branch_id = request.json.get('branchID')
+    finish_id = request.json.get('finishID')
+    last_jobs = [request.json.get('lastJob1'), request.json.get('lastJob2'), request.json.get('lastJob3')]
+
+    worker = Workers.query.filter_by(email=email, branchID=branch_id).first()
+
+
+
+
+    if worker:
+        worker_id = worker.id
+        worker_finish_id = worker.finishID
+
+        if finish_id == worker_finish_id:
+            # Check last three jobs
+            last_three_completed_jobs = CompletedJob.query.filter_by(worker_id=worker_id, branch_id=branch_id).order_by(CompletedJob.completion_date.desc()).limit(3).all()
+            service_names = []
+            for job in last_three_completed_jobs:
+                job_id = job.job_id
+                job_row = Jobs.query.filter_by(id=job_id).first()
+                if job_row:
+                    service_names.append(job_row.jobs)
+            print(service_names)
+            if len(last_three_completed_jobs) == 3 and all(last_job == job for last_job, job in zip(service_names, last_jobs)):
+
+
+
+              # Data matches, return "Accepted"
+              return jsonify({"message": "Accepted"})
+            else:
+                # Data does not match the last three jobs
+                return jsonify({"message": "RejectedJops"})
+        else:
+            # FinishID does not match
+            return jsonify({"message": "RejectedFinish"})
+    else:
+        # Worker not found
+        return jsonify({"message": "RejectedWorker"})
+
+
+
+
+@app.route('/change_password' , methods=['PUT'])
+def change_worker_password():
+
+  data = request.get_json()
+  newPassword = data.get('newPassword')
+  email = data.get('email')
+  if newPassword:
+    # Update the password of all workers with the same email
+    workers = Workers.query.filter_by(email=email).all()
+
+    if workers:
+      for worker in workers:
+        hashed_password = bcrypt.generate_password_hash(newPassword)
+        worker.password = hashed_password
+        # In this example, we assume the password field in the Workers table is named 'password'
+
+        # Commit the changes to the database
+        db.session.commit()
+    return  workers_schema.jsonify(workers)
+  else:
+    print('mfesh password')
+
+  # Saves the changes to the database.
+  db.session.commit()
+
+  return  workers_schema.jsonify(workers)
+
+
 
 
 
@@ -1869,6 +1982,9 @@ def update_job(id):
   if not job_to_update:
     return jsonify({"error": "User Not Found"}), 404
 
+  checkedWorker_id = request.form['worker_id']
+  job_id = id
+  branch_id = request.form['branchID']
 
   job_to_update.check = check
   job_to_update.subMission = subMission
@@ -1890,6 +2006,8 @@ def update_job(id):
     job_to_update.image3 = oldImage3
 
 
+  completed_job = CompletedJob(worker_id=checkedWorker_id, job_id=job_id, branch_id=branch_id)
+  db.session.add(completed_job)
 
   # Saves the changes to the database.
   db.session.commit()
