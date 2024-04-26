@@ -1,3 +1,4 @@
+import json
 from flask import Flask, make_response, render_template, redirect, session, url_for, flash, g, request, jsonify, abort, send_file, current_app, Response
 from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
 from flask_cors import CORS
@@ -162,6 +163,7 @@ class Orders(db.Model):
   customer = db.Column(db.String(3000), nullable=False)
   service = db.Column(db.String(5000))
   price = db.Column(db.Float, nullable=False)
+  salary = db.Column(db.Float, nullable=False)
   W1 = db.Column(db.String(1000), nullable=False)
   W2 = db.Column(db.String(1000), nullable=False)
   W3 = db.Column(db.String(1000), nullable=False)
@@ -169,7 +171,7 @@ class Orders(db.Model):
   branchID = db.Column(db.Integer)
 
 
-def __init__(self, date, licensePlate, carBrand, carModel, customer, service, price, W1, W2, W3, notes, branchID):
+def __init__(self, date, licensePlate, carBrand, carModel, customer, service, price, salary, W1, W2, W3, notes, branchID):
     self.date = date
     self.licensePlate = licensePlate
     self.carBrand = carBrand
@@ -177,6 +179,7 @@ def __init__(self, date, licensePlate, carBrand, carModel, customer, service, pr
     self.customer = customer
     self.service = service
     self.price = price
+    self.salary = salary
     self.W1 = W1
     self.W2 = W2
     self.W3 = W3
@@ -189,7 +192,7 @@ def __init__(self, date, licensePlate, carBrand, carModel, customer, service, pr
 # Orders schema:
 class OrdersSchema(ma.Schema):
   class Meta:
-    fields = ('id', 'date', 'licensePlate', 'carBrand', 'carModel', 'customer', 'service', 'price', 'W1', 'W2', 'W3', 'notes', 'branchID')
+    fields = ('id', 'date', 'licensePlate', 'carBrand', 'carModel', 'customer', 'service', 'price', 'salary', 'W1', 'W2', 'W3', 'notes', 'branchID')
 
 order_schema =  OrdersSchema()
 orders_schema = OrdersSchema(many=True)
@@ -253,40 +256,38 @@ class Jobs(db.Model):
   firstName = db.Column(db.String(80), nullable=False)
   lastName = db.Column(db.String(80), nullable=False)
   jobs = db.Column(db.String(3000), nullable=False)
+  salary = db.Column(db.Float, nullable=False)
   customer = db.Column(db.String(1000), nullable=False)
+  licensePlate = db.Column(db.String(100), nullable=False)
   check = db.Column(db.String(50))
   subMission = db.Column(db.String(3000000))
   doubled = db.Column(db.String(50))
   worker_id = db.Column(db.Integer, ForeignKey('workers.id'))
   workerEmail = db.Column(db.String(100), nullable=False)
-  image1 = db.Column(db.String(1000000), nullable=False)
-  image2 = db.Column(db.String(1000000))
-  image3 = db.Column(db.String(1000000))
   branchID = db.Column(db.Integer)
 
 
 
-def __init__(self, date, firstName, lastName, jobs, customer, check, doubled, worker_id, subMission, image1, image2, image3, branchID, workerEmail):
+def __init__(self, date, firstName, lastName, jobs, salary, customer, licensePlate, check, doubled, worker_id, subMission, branchID, workerEmail):
     self.date= date
     self.firstName = firstName
     self.lastName = lastName
     self.jobs = jobs
+    self.salary = salary
     self.customer = customer
+    self.licensePlate = licensePlate
     self.check = check
     self.doubled = doubled
     self.worker_id =  worker_id
     self.workerEmail = workerEmail
     self.subMission = subMission
-    self.image1 = image1
-    self.image2 = image2
-    self.image3 = image3
     self.branchID = branchID
 
 
 # Jobs schema:
 class JobsSchema(ma.Schema):
   class Meta:
-    fields = ('id', 'date', 'firstName', 'lastName', 'jobs', 'customer', 'check', 'doubled', 'worker_id', 'subMission', 'image1', 'image2', 'image3', 'branchID', 'workerEmail')
+    fields = ('id', 'date', 'firstName', 'lastName', 'jobs', 'salary', 'customer', 'licensePlate', 'check', 'doubled', 'worker_id', 'subMission', 'branchID', 'workerEmail')
 
 job_schema =  JobsSchema()
 jobs_schema = JobsSchema(many=True)
@@ -330,6 +331,7 @@ class Service(db.Model):
 
   service = db.Column(db.String(1000000), nullable=False)
   price = db.Column(db.Float, nullable=False)
+  calculation = db.Column(db.String(3000), nullable=False)
   serviceType = db.Column(db.String(3000), nullable=False)
   percentage = db.Column(db.Float, nullable=False)
   branchID = db.Column(db.Integer)
@@ -337,9 +339,10 @@ class Service(db.Model):
 
 
 
-def __init__(self, service, price, serviceType, percentage, branchID):
+def __init__(self, service, price, calculation, serviceType, percentage, branchID):
   self.service= service
   self.price = price
+  self.calculation = calculation
   self.serviceType = serviceType
   self.percentage = percentage
   self.branchID = branchID
@@ -349,7 +352,7 @@ def __init__(self, service, price, serviceType, percentage, branchID):
 # Service schema:
 class ServiceSchema(ma.Schema):
   class Meta:
-    fields = ('id', 'service', 'price', 'serviceType', 'percentage', 'branchID')
+    fields = ('id', 'service', 'price', 'calculation', 'serviceType', 'percentage', 'branchID')
 
 service_schema =  ServiceSchema()
 services_schema = ServiceSchema(many=True)
@@ -369,15 +372,12 @@ class Customers(db.Model):
   carModel = db.Column(db.String(1000), nullable=False)
   service = db.Column(db.String(5000))
   price = db.Column(db.Float, nullable=False)
-  image1 = db.Column(db.String(1000000), nullable=False)
-  image2 = db.Column(db.String(1000000))
-  image3 = db.Column(db.String(1000000))
   branchID = db.Column(db.Integer)
 
 
 
 
-def __init__(self, date, name, licensePlate, carBrand, carModel, service, price, image1, image2, image3, branchID):
+def __init__(self, date, name, licensePlate, carBrand, carModel, service, price, branchID):
     self.date = date
     self.name = name
     self.licensePlate = licensePlate
@@ -385,9 +385,6 @@ def __init__(self, date, name, licensePlate, carBrand, carModel, service, price,
     self.carModel = carModel
     self.service = service
     self.price = price
-    self.image1 = image1
-    self.image2 = image2
-    self.image3 = image3
     self.branchID = branchID
 
 
@@ -398,7 +395,7 @@ def __init__(self, date, name, licensePlate, carBrand, carModel, service, price,
 # Customers schema:
 class CustomersSchema(ma.Schema):
   class Meta:
-    fields = ('id', 'date', 'name', 'licensePlate', 'carBrand', 'carModel', 'service', 'price', 'image1', 'image2', 'image3', 'branchID')
+    fields = ('id', 'date', 'name', 'licensePlate', 'carBrand', 'carModel', 'service', 'price', 'branchID')
 
 customer_schema =  CustomersSchema()
 customers_schema = CustomersSchema(many=True)
@@ -429,6 +426,34 @@ class BranchSchema(ma.Schema):
 
 branch_schema =  BranchSchema()
 branches_schema = BranchSchema(many=True)
+
+
+
+
+
+# Define the CarBrands&Models model
+class CarBrands_Models(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  brand = db.Column(db.String(5000), nullable=False)
+  model = db.Column(db.String(5000), nullable=False)
+  branchID = db.Column(db.Integer)
+
+
+def __init__(self, brand, model, branchID):
+    self.brand = brand
+    self.model = model
+    self.branchID = branchID
+
+
+
+
+# Branch schema:
+class CarBrandSchema(ma.Schema):
+  class Meta:
+    fields = ('id', 'brand', 'model', 'branchID')
+
+carBrand_schema =  CarBrandSchema()
+carBrands_schema = CarBrandSchema(many=True)
 
 
 
@@ -511,9 +536,9 @@ def download_all_data():
 
     # Write data from Service table
     writer.writerow(["Service Data"])
-    writer.writerow(["id", "service", "price", "serviceType", "percentage", "branchID"])
+    writer.writerow(["id", "service", "calculation", "serviceType", "percentage", "branchID"])
     for service in Service.query.all():
-        writer.writerow([service.id, service.service, service.price, service.serviceType, service.percentage, service.branchID])
+        writer.writerow([service.id, service.service, service.calculation, service.serviceType, service.percentage, service.branchID])
 
     writer.writerow([])  # Empty row to separate tables
 
@@ -694,13 +719,18 @@ def notify_frontend_action():
 
     # Get Services data from frontend.
     serviceID = data.get('serviceID')
+    serviceService = data.get('service')
+    category = data.get('category')
+    serviceType = data.get('serviceType')
+    percentage = data.get('percentage')
+
     updatedService = data.get('updatedService')
-    updatedPrice = data.get('updatedPrice')
+    updatedCategory = data.get('updatedCategory')
     updatedServiceType = data.get('updatedServiceType')
     updatedPercentage = data.get('updatedPercentage')
 
     oldServicesService = data.get('oldServicesService')
-    oldServicesPrice = data.get('oldServicesPrice')
+    oldServicesCategory = data.get('oldServicesCategory')
     oldServiceType = data.get('oldServiceType')
     oldPercentage = data.get('oldPercentage')
 
@@ -750,6 +780,12 @@ def notify_frontend_action():
       else:
         jobMainService = '---'
 
+    # Get Customers data from frontend:
+    customerID = data.get('customerID')
+    date = data.get('date')
+    name = date.get('name')
+
+
 
 
     checkedWorkerName = ''
@@ -773,11 +809,14 @@ def notify_frontend_action():
     elif action == 'deleted_order':
         content = f"An Order Deleted by: {auth}!\nOrder ID: {orderID}, Date: {oldDate}, Customer: {oldCustomer}, License plate: {oldLicensePlate}, Car brand: {oldCarBrand}, Car model: {oldCarModel}, Worker 1: {oldWorkerName1}, Worker 2: {oldWorkerName2}, Worker 3: {oldWorkerName3}, Service: {oldService}, Price: {oldPrice}, Notes: {oldNotes}, Branch: {branchName}"
         send_notification(content)
+    elif action == 'new_service':
+        content = f"New service added by: {auth}!\nService ID: {serviceID}, Service: {serviceService}, Category: {category}, Service type: {serviceType}, Percentage: {percentage}, Branch: {branchName}"
+        send_notification(content)
     elif action == 'updated_service':
-        content = f"A Service Updated by: {auth}!\nFrom:\nService ID: {serviceID}, Service: {oldServicesService}, Price: {oldServicesPrice}, Service type: {oldServiceType}, Percentage: {oldPercentage}, Branch: {branchName}\nTo:\nService ID: {serviceID}, Service: {updatedService}, Price: {updatedPrice}, Service type: {updatedServiceType}, Percentage: {updatedPercentage}, Branch: {branchName}"
+        content = f"A Service Updated by: {auth}!\nFrom:\nService ID: {serviceID}, Service: {oldServicesService}, Category: {oldServicesCategory}, Service type: {oldServiceType}, Percentage: {oldPercentage}, Branch: {branchName}\nTo:\nService ID: {serviceID}, Service: {updatedService}, Category: {updatedCategory}, Service type: {updatedServiceType}, Percentage: {updatedPercentage}, Branch: {branchName}"
         send_notification(content)
     elif action == 'deleted_service':
-        content = f"A Service Deleted by: {auth}!\nService ID: {serviceID}, Service: {oldServicesService}, Price: {oldServicesPrice}, Service type: {oldServiceType}, Percentage: {oldPercentage}, Branch: {branchName}"
+        content = f"A Service Deleted by: {auth}!\nService ID: {serviceID}, Service: {oldServicesService}, Category: {oldServicesCategory}, Service type: {oldServiceType}, Percentage: {oldPercentage}, Branch: {branchName}"
         send_notification(content)
     elif action == 'new_user':
         content = f"New Member created!\n First name: {fn}, Last name: {ln}, Email: {email}, Access: {access}"
@@ -791,6 +830,16 @@ def notify_frontend_action():
     elif action == 'job_check':
         content = f"New job status!\n{checkedWorkerName} checked with: {updatedCheck} for completing: {updatedSubMission}\n Job ID: {jobID}, Job is done: {updatedCheck}, Customer: {jobCustomer}, Main service: {jobMainService}, Sub-Mission: {updatedSubMission}"
         send_notification(content)
+    elif action == 'new_Customer':
+        content = f"New customer added by: {auth}!\n Customer ID: {customerID}, Date: {date}, Name: {name}, License plate: {licensePlate}, Car brand: {carBrand}, Car model: {carModel}, Service: {service}, Price: {price}, Branch: {branchName}"
+        send_notification(content)
+    elif action == 'updated_customer':
+        content = f"A customer updated by: {auth}!\n Customer ID: {customerID}, Date: {date}, Name: {name}, License plate: {licensePlate}, Car brand: {carBrand}, Car model: {carModel}, Service: {service}, Price: {price}, Branch: {branchName}"
+        send_notification(content)
+    elif action == 'deleted_customer':
+        content = f"A customer deleted by: {auth}!\n Customer ID: {customerID}, Date: {date}, Name: {name}, License plate: {licensePlate}, Car brand: {carBrand}, Car model: {carModel}, Service: {service}, Price: {price}, Branch: {branchName}"
+        send_notification(content)
+
     # Add more conditions for other actions
 
     return 'Notification sent!'
@@ -1280,7 +1329,7 @@ def forgot_password():
     email = request.json.get('email')
     branch_id = request.json.get('branchID')
     finish_id = request.json.get('finishID')
-    last_jobs = [request.json.get('lastJob1'), request.json.get('lastJob2'), request.json.get('lastJob3')]
+    # last_jobs = [request.json.get('lastJob1'), request.json.get('lastJob2'), request.json.get('lastJob3')]
 
     worker = Workers.query.filter_by(email=email, branchID=branch_id).first()
 
@@ -1293,23 +1342,21 @@ def forgot_password():
 
         if finish_id == worker_finish_id:
             # Check last three jobs
-            last_three_completed_jobs = CompletedJob.query.filter_by(worker_id=worker_id, branch_id=branch_id).order_by(CompletedJob.completion_date.desc()).limit(3).all()
-            service_names = []
-            for job in last_three_completed_jobs:
-                job_id = job.job_id
-                job_row = Jobs.query.filter_by(id=job_id).first()
-                if job_row:
-                    service_names.append(job_row.jobs)
-            print(service_names)
-            if len(last_three_completed_jobs) == 3 and all(last_job == job for last_job, job in zip(service_names, last_jobs)):
+            # last_three_completed_jobs = CompletedJob.query.filter_by(worker_id=worker_id, branch_id=branch_id).order_by(CompletedJob.completion_date.desc()).limit(3).all()
+            # service_names = []
+            # for job in last_three_completed_jobs:
+            #     job_id = job.job_id
+            #     job_row = Jobs.query.filter_by(id=job_id).first()
+            #     if job_row:
+            #         service_names.append(job_row.jobs)
+            # print(service_names)
+            # if len(last_three_completed_jobs) == 3 and all(last_job == job for last_job, job in zip(service_names, last_jobs)):
 
 
 
               # Data matches, return "Accepted"
-              return jsonify({"message": "Accepted"})
-            else:
-                # Data does not match the last three jobs
-                return jsonify({"message": "RejectedJops"})
+          return jsonify({"message": "Accepted"})
+
         else:
             # FinishID does not match
             return jsonify({"message": "RejectedFinish"})
@@ -1340,7 +1387,7 @@ def change_worker_password():
         db.session.commit()
     return  workers_schema.jsonify(workers)
   else:
-    print('mfesh password')
+    print('No Password!')
 
   # Saves the changes to the database.
   db.session.commit()
@@ -1468,43 +1515,43 @@ def add_orders():
 
       if firstName1 and lastName1 :
         if existing_w1:
-          job = Jobs(date=date, jobs=service, firstName=firstName1, lastName=lastName1, check='No', doubled=1, worker_id=W1, subMission='', image1='', image2='', image3='', customer=customer, branchID=branchID, workerEmail=worker1Email)
+          job = Jobs(date=date, jobs=service, firstName=firstName1, lastName=lastName1, check='No', doubled=1, worker_id=W1, subMission='', customer=customer, licensePlate=licensePlate, branchID=branchID, workerEmail=worker1Email)
           db.session.add(job)
           db.session.commit()
         else:
-          job = Jobs(date=date, jobs=service, firstName=firstName1, lastName=lastName1, check='No', doubled=0, worker_id=W1, subMission='', image1='', image2='', image3='', customer=customer, branchID=branchID, workerEmail=worker1Email)
+          job = Jobs(date=date, jobs=service, firstName=firstName1, lastName=lastName1, check='No', doubled=0, worker_id=W1, subMission='', customer=customer, licensePlate=licensePlate, branchID=branchID, workerEmail=worker1Email)
           db.session.add(job)
           db.session.commit()
 
 
       if firstName2 and lastName2 :
         if existing_w2:
-          job = Jobs(date= date, jobs=service, firstName=firstName2, lastName=lastName2, check='No', doubled=1, worker_id=W2, subMission='', image1='', image2='', image3='', customer=customer, branchID=branchID, workerEmail=worker2Email)
+          job = Jobs(date= date, jobs=service, firstName=firstName2, lastName=lastName2, check='No', doubled=1, worker_id=W2, subMission='', customer=customer, licensePlate=licensePlate, branchID=branchID, workerEmail=worker2Email)
           db.session.add(job)
           db.session.commit()
         else:
-          job = Jobs(date= date, jobs=service, firstName=firstName2, lastName=lastName2, check='No', doubled=0, worker_id=W2, subMission='', image1='', image2='', image3='', customer=customer, branchID=branchID, workerEmail=worker2Email)
+          job = Jobs(date= date, jobs=service, firstName=firstName2, lastName=lastName2, check='No', doubled=0, worker_id=W2, subMission='', customer=customer, licensePlate=licensePlate, branchID=branchID, workerEmail=worker2Email)
           db.session.add(job)
           db.session.commit()
 
       if firstName3 and lastName3 :
         if existing_w3:
-          job = Jobs(date= date, jobs=service, firstName=firstName3, lastName=lastName3, check='No', doubled=1, worker_id=W3, subMission='', image1='', image2='', image3='', customer=customer, branchID=branchID, workerEmail=worker3Email)
+          job = Jobs(date= date, jobs=service, firstName=firstName3, lastName=lastName3, check='No', doubled=1, worker_id=W3, subMission='', customer=customer, licensePlate=licensePlate, branchID=branchID, workerEmail=worker3Email)
           db.session.add(job)
           db.session.commit()
         else:
-          job = Jobs(date= date, jobs=service, firstName=firstName3, lastName=lastName3, check='No', doubled=0, worker_id=W3, subMission='', image1='', image2='', image3='', customer=customer, branchID=branchID, workerEmail=worker3Email)
+          job = Jobs(date= date, jobs=service, firstName=firstName3, lastName=lastName3, check='No', doubled=0, worker_id=W3, subMission='', customer=customer, licensePlate=licensePlate, branchID=branchID, workerEmail=worker3Email)
           db.session.add(job)
           db.session.commit()
 
         # we need to check that there is no service with this name and branchID :
-      existing_service = Service.query.filter_by(service=service, branchID=branchID).first()
+      # existing_service = Service.query.filter_by(service=service, branchID=branchID).first()
 
-      if not existing_service:
+      # if not existing_service:
 
-        newServiceRow = Service(service=service, serviceType='Percentage %', price=price, percentage=40, branchID=branchID)
-        db.session.add(newServiceRow)
-        db.session.commit()
+      #   newServiceRow = Service(service=service, serviceType='Percentage %', price=price, percentage=40, branchID=branchID)
+      #   db.session.add(newServiceRow)
+      #   db.session.commit()
 
 
 
@@ -1517,14 +1564,22 @@ def add_orders():
   else:
 
     data = request.get_json()
-    date = datetime.strptime(data.get('date'), '%Y-%m-%d').date()
+    date_value = data.get('date')
+    if date_value:
+      date = datetime.strptime(data.get('date'), '%Y-%m-%d').date()
+    else:
+      date = datetime.now().date()
     licensePlate = data.get('licensePlate')
     carBrand = data.get("carBrand")
     carModel = data.get('carModel')
     customer = data.get('customer')
-    service = data.get('service')
-    fixedCommission = data.get('fixedCommission')
+    service = data.get('services')
+    # services = [s for s in service if not callable(s)]
+    # Convert the list of services to a JSON string
+    # services_json = json.dumps(service)
+    # fixedCommission = data.get('fixedCommission')
     price = data.get('price')
+    salary = data.get('salary')
     W1 = data.get('W1')
     W2 = data.get('W2')
     W3 = data.get('W3')
@@ -1536,6 +1591,7 @@ def add_orders():
     worker3Email = Workers.query.filter_by(id=W3).first().email if W3 else ''
 
 
+
     firstName1 = data.get('firstName1')
     lastName1 = data.get('lastName1')
     firstName2 = data.get('firstName2')
@@ -1543,7 +1599,7 @@ def add_orders():
     firstName3 = data.get('firstName3')
     lastName3 = data.get('lastName3')
     doubled = False
-    new_order = Orders(date=date, licensePlate=licensePlate, carBrand=carBrand, carModel=carModel, customer=customer, price=price, service=service, W1=W1, W2=W2, W3=W3, notes=notes, branchID=branchID)
+    new_order = Orders(date=date, licensePlate=licensePlate, carBrand=carBrand, carModel=carModel, customer=customer, price=price, service=service, salary=salary, W1=W1, W2=W2, W3=W3, notes=notes, branchID=branchID)
     db.session.add(new_order)
     db.session.commit()
     # Get latest worker ID
@@ -1569,47 +1625,47 @@ def add_orders():
 
     if firstName1 and lastName1 :
       if existing_w1:
-        job = Jobs(date=date, jobs=service, firstName=firstName1, lastName=lastName1, check='No', doubled=doubled, worker_id=W1, subMission='', image1='', image2='', image3='', customer=customer, branchID=branchID, workerEmail=worker1Email)
+        job = Jobs(date=date, jobs=service, firstName=firstName1, lastName=lastName1, salary=salary, check='No', doubled=doubled, worker_id=W1, subMission='', customer=customer, licensePlate=licensePlate, branchID=branchID, workerEmail=worker1Email)
         db.session.add(job)
         db.session.commit()
       else:
-        job = Jobs(date=date, jobs=service, firstName=firstName1, lastName=lastName1, check='No', doubled=doubled, worker_id=W1, subMission='', image1='', image2='', image3='', customer=customer, branchID=branchID, workerEmail=worker1Email)
+        job = Jobs(date=date, jobs=service, firstName=firstName1, lastName=lastName1, salary=salary, check='No', doubled=doubled, worker_id=W1, subMission='', customer=customer, licensePlate=licensePlate, branchID=branchID, workerEmail=worker1Email)
         db.session.add(job)
         db.session.commit()
 
 
     if firstName2 and lastName2 :
       if existing_w2:
-        job = Jobs(date= date, jobs=service, firstName=firstName2, lastName=lastName2, check='No', doubled=doubled, worker_id=W2, subMission='', image1='', image2='', image3='', customer=customer, branchID=branchID, workerEmail=worker2Email)
+        job = Jobs(date= date, jobs=service, firstName=firstName2, lastName=lastName2, salary=salary, check='No', doubled=doubled, worker_id=W2, subMission='', customer=customer, licensePlate=licensePlate, branchID=branchID, workerEmail=worker2Email)
         db.session.add(job)
         db.session.commit()
       else:
-        job = Jobs(date= date, jobs=service, firstName=firstName2, lastName=lastName2, check='No', doubled=doubled, worker_id=W2, subMission='', image1='', image2='', image3='', customer=customer, branchID=branchID, workerEmail=worker2Email)
+        job = Jobs(date= date, jobs=service, firstName=firstName2, lastName=lastName2, salary=salary, check='No', doubled=doubled, worker_id=W2, subMission='', customer=customer, licensePlate=licensePlate, branchID=branchID, workerEmail=worker2Email)
         db.session.add(job)
         db.session.commit()
 
     if firstName3 and lastName3 :
       if existing_w3:
-        job = Jobs(date= date, jobs=service, firstName=firstName3, lastName=lastName3, check='No', doubled=doubled, worker_id=W3, subMission='', image1='', image2='', image3='', customer=customer, branchID=branchID, workerEmail=worker3Email)
+        job = Jobs(date= date, jobs=service, firstName=firstName3, lastName=lastName3, salary=salary, check='No', doubled=doubled, worker_id=W3, subMission='', customer=customer, licensePlate=licensePlate, branchID=branchID, workerEmail=worker3Email)
         db.session.add(job)
         db.session.commit()
       else:
-        job = Jobs(date= date, jobs=service, firstName=firstName3, lastName=lastName3, check='No', doubled=doubled, worker_id=W3, subMission='', image1='', image2='', image3='', customer=customer, branchID=branchID, workerEmail=worker3Email)
+        job = Jobs(date= date, jobs=service, firstName=firstName3, lastName=lastName3, salary=salary, check='No', doubled=doubled, worker_id=W3, subMission='', customer=customer, licensePlate=licensePlate, branchID=branchID, workerEmail=worker3Email)
         db.session.add(job)
         db.session.commit()
 
     # we need to check that there is no service with this name and branchID :
-    existing_service = Service.query.filter_by(service=service, branchID=branchID).first()
+    # existing_service = Service.query.filter_by(service=service, branchID=branchID).first()
 
-    if not existing_service:
-      if fixedCommission:
-          newServiceRow = Service(service=service, serviceType="Fixed", price=price, percentage=fixedCommission, branchID=branchID)
-          db.session.add(newServiceRow)
-          db.session.commit()
-      else:
-          newServiceRow = Service(service=service, serviceType='Percentage %', price=price, percentage=40, branchID=branchID)
-          db.session.add(newServiceRow)
-          db.session.commit()
+    # if not existing_service:
+    #   if fixedCommission:
+    #       newServiceRow = Service(service=service, serviceType="Fixed", price=price, percentage=fixedCommission, branchID=branchID)
+    #       db.session.add(newServiceRow)
+    #       db.session.commit()
+    #   else:
+    #       newServiceRow = Service(service=service, serviceType='Percentage %', price=price, percentage=40, branchID=branchID)
+    #       db.session.add(newServiceRow)
+    #       db.session.commit()
 
 
 
@@ -1674,6 +1730,7 @@ def update_order(id):
   carModel = data.get('updatedCarModel')
   customer = data.get("updatedCustomer")
   service = data.get('updatedService')
+  salary = data.get('salary')
   oldService = order_to_update.service
   oldDate = order_to_update.date
   price = data.get('updatedPrice')
@@ -1741,14 +1798,16 @@ def update_order(id):
     for job in jobs:
       job.jobs = service
       job.customer = customer
+      job.salary = salary
+      job.licensePlate = licensePlate
       job.date = date
       db.session.commit()
 
 
-  service_to_update = Service.query.filter_by(service = oldService).first()
-  if price and service_to_update:
-    service_to_update.price = price
-    db.session.commit()
+  # service_to_update = Service.query.filter_by(service = oldService).first()
+  # if price and service_to_update:
+  #   service_to_update.price = price
+  #   db.session.commit()
 
 
 
@@ -1761,6 +1820,7 @@ def update_order(id):
                    'updatedCustomer',
                    'updatedService',
                    'updatedPrice',
+                   'salary',
                    'W1',
                    'W2',
                    'W3',
@@ -1805,6 +1865,7 @@ def update_order(id):
   order_to_update.customer = customer
   order_to_update.service = service
   order_to_update.price = price
+  order_to_update.salary = salary
   order_to_update.W1 = worker_ids[0]
   order_to_update.W2 = worker_ids[1]
   order_to_update.W3 = worker_ids[2]
@@ -1873,6 +1934,7 @@ def update_job(id):
 
   oldService = job_to_update.jobs
   oldCustomer = job_to_update.customer
+  oldLicensePlate = job_to_update.licensePlate
   oldDate = job_to_update.date
   service = ''
   if 'updatedService' in request.form:
@@ -1885,6 +1947,12 @@ def update_job(id):
     customer = request.form['updatedCustomer']
   else:
     customer = oldCustomer
+
+  licensePlate = ''
+  if 'updatedLicensePlate' in request.form:
+    licensePlate = request.form['updatedLicensePlate']
+  else:
+    licensePlate = oldLicensePlate
 
   date_str = ''
   if 'updatedDate' in request.form:
@@ -1937,6 +2005,7 @@ def update_job(id):
 
   job_to_update.jobs = service
   job_to_update.customer = customer
+  job_to_update.licensePlate = licensePlate
   job_to_update.date = parsed_date
 
 
@@ -1945,35 +2014,35 @@ def update_job(id):
 
   check = request.form['updatedCheck']
   subMission = request.form['updatedSubMission']
-  oldImage1 = job_to_update.image1
-  oldImage2 = job_to_update.image2
-  oldImage3 = job_to_update.image3
+  # oldImage1 = job_to_update.image1
+  # oldImage2 = job_to_update.image2
+  # oldImage3 = job_to_update.image3
 
-  image1 = None
-  image2 = None
-  image3 = None
+  # image1 = None
+  # image2 = None
+  # image3 = None
 
-  if 'updatedImage1' in request.files:
-    image1 = request.files['updatedImage1']
+  # if 'updatedImage1' in request.files:
+  #   image1 = request.files['updatedImage1']
 
-  if 'updatedImage2' in request.files:
-    image2 = request.files['updatedImage2']
+  # if 'updatedImage2' in request.files:
+  #   image2 = request.files['updatedImage2']
 
-  if 'updatedImage3' in request.files:
-    image3 = request.files['updatedImage3']
+  # if 'updatedImage3' in request.files:
+  #   image3 = request.files['updatedImage3']
 
 
-  if image1 != None and allowed_image(image1.filename):
-    filename1 = secure_filename(image1.filename)
-    image1.save(os.path.join('client/public/images', filename1))
+  # if image1 != None and allowed_image(image1.filename):
+  #   filename1 = secure_filename(image1.filename)
+  #   image1.save(os.path.join('client/public/images', filename1))
 
-  if image2 != None and allowed_image(image2.filename):
-    filename2 = secure_filename(image2.filename)
-    image2.save(os.path.join('client/public/images', filename2))
+  # if image2 != None and allowed_image(image2.filename):
+  #   filename2 = secure_filename(image2.filename)
+  #   image2.save(os.path.join('client/public/images', filename2))
 
-  if image3 != None and allowed_image(image3.filename):
-    filename3 = secure_filename(image3.filename)
-    image3.save(os.path.join('client/public/images', filename3))
+  # if image3 != None and allowed_image(image3.filename):
+  #   filename3 = secure_filename(image3.filename)
+  #   image3.save(os.path.join('client/public/images', filename3))
 
 
 
@@ -1990,20 +2059,20 @@ def update_job(id):
   job_to_update.subMission = subMission
 
 
-  if image1 != None:
-    job_to_update.image1 = filename1
-  else:
-    job_to_update.image1 = oldImage1
+  # if image1 != None:
+  #   job_to_update.image1 = filename1
+  # else:
+  #   job_to_update.image1 = oldImage1
 
-  if image2 != None:
-    job_to_update.image2 = filename2
-  else:
-    job_to_update.image2 = oldImage2
+  # if image2 != None:
+  #   job_to_update.image2 = filename2
+  # else:
+  #   job_to_update.image2 = oldImage2
 
-  if image3 != None:
-    job_to_update.image3 = filename3
-  else:
-    job_to_update.image3 = oldImage3
+  # if image3 != None:
+  #   job_to_update.image3 = filename3
+  # else:
+  #   job_to_update.image3 = oldImage3
 
 
   completed_job = CompletedJob(worker_id=checkedWorker_id, job_id=job_id, branch_id=branch_id)
@@ -2069,6 +2138,41 @@ def service(id):
 
 
 
+
+
+
+
+
+@app.route('/api/AddService' , methods=['POST'])
+def add_service():
+
+
+
+
+  data = request.get_json()
+
+  service = data.get('service')
+  price = 0
+  calculation = data.get('category')
+  serviceType = data.get('serviceType')
+  percentage = data.get('percentage')
+  branchID = data.get('branchID')
+
+
+  new_service = Service(service=service, price=price, calculation=calculation, serviceType=serviceType, percentage=percentage, branchID=branchID)
+  db.session.add(new_service)
+  db.session.commit()
+
+  return service_schema.jsonify(new_service)
+
+
+
+
+
+
+
+
+
 # ==============================================================================================================
 
 #                               Updating a Service (PUT Request) API route:
@@ -2080,12 +2184,13 @@ def update_service(id):
 
   data = request.get_json()
   service = data.get('updatedService')
-  price = data.get('updatedPrice')
+  price = 0
+  calculation = data.get('updatedCategory')
   serviceType = data.get('updatedServiceType')
   percentage = data.get("updatedPercentage")
 
   for key in data.keys():
-    if key not in ["updatedService", 'updatedPrice', 'updatedServiceType', 'updatedPercentage'] :
+    if key not in ["updatedService", 'updatedPrice', 'updatedServiceType', 'updatedPercentage', 'updatedCategory'] :
       return jsonify({"error":f"The field {key} does not exist."}), 400
      # The line above checks to see if the keys from the JSON input match up with the ones we are looking for. If they don't
 
@@ -2093,12 +2198,12 @@ def update_service(id):
   missing_fields = []
   if not service:
     missing_fields.append("Service")
-  if not price:
-    missing_fields.append("Price")
   if not serviceType:
     missing_fields.append("Service Type")
   if not percentage:
     missing_fields.append("Percentage")
+  if not calculation:
+    missing_fields.append("Category")
 
 
 
@@ -2112,6 +2217,7 @@ def update_service(id):
   # Updates the information of the  user who matches the ID in the URL parameter.
   service_to_update.service = service
   service_to_update.price = price
+  service_to_update.calculation = calculation
   service_to_update.serviceType = serviceType
   service_to_update.percentage = percentage
 
@@ -2218,11 +2324,9 @@ def add_customers():
       carModel = row['carModel']
       service = row['service']
       price = float(row['price'])
-      image1 = row['image1']
-      image2 = row['image2']
-      image3 = row['image3']
 
-      new_customer = Customers(date=date, name=name, licensePlate=licensePlate, carBrand=carBrand, carModel=carModel, price=price, service=service, image1=image1, image2=image2, image3=image3, branchID=branchID)
+
+      new_customer = Customers(date=date, name=name, licensePlate=licensePlate, carBrand=carBrand, carModel=carModel, price=price, service=service, branchID=branchID)
       db.session.add(new_customer)
       db.session.commit()
 
@@ -2249,39 +2353,10 @@ def add_customers():
     service = request.form['service']
     price = request.form['price']
     branchID = request.form['branchID']
-    image1= None
-    image2= None
-    image3= None
-
-    filename1 = ''
-    filename2 = ''
-    filename3 = ''
-
-    if 'image1' in request.files:
-      image1 = request.files['image1']
-      print(image1)
-
-    if 'image2' in request.files:
-      image2 = request.files['image2']
-
-    if 'image3' in request.files:
-      image3 = request.files['image3']
 
 
-    if image1 != None and allowed_image(image1.filename):
-      filename1 = secure_filename(image1.filename)
-      image1.save(os.path.join('client/public/images', filename1))
 
-    if image2 != None and allowed_image(image2.filename):
-      filename2 = secure_filename(image2.filename)
-      image2.save(os.path.join('client/public/images', filename2))
-
-    if image3 != None and allowed_image(image3.filename):
-      filename3 = secure_filename(image3.filename)
-      image3.save(os.path.join('client/public/images', filename3))
-
-
-    new_customer = Customers(date=date, name=name, licensePlate=licensePlate, carBrand=carBrand, carModel=carModel, price=price, service=service, image1=filename1, image2=filename2, image3=filename3, branchID=branchID)
+    new_customer = Customers(date=date, name=name, licensePlate=licensePlate, carBrand=carBrand, carModel=carModel, price=price, service=service, branchID=branchID)
     db.session.add(new_customer)
     db.session.commit()
 
@@ -2328,34 +2403,34 @@ def update_customer(id):
   service = request.form['updatedService']
   price = request.form['updatedPrice']
 
-  oldImage1 = customer_to_update.image1
-  oldImage2 = customer_to_update.image2
-  oldImage3 = customer_to_update.image3
+  # oldImage1 = customer_to_update.image1
+  # oldImage2 = customer_to_update.image2
+  # oldImage3 = customer_to_update.image3
 
-  image1 = None
-  image2 = None
-  image3 = None
-  if 'updatedImage1' in request.files:
-    image1 = request.files['updatedImage1']
+  # image1 = None
+  # image2 = None
+  # image3 = None
+  # if 'updatedImage1' in request.files:
+  #   image1 = request.files['updatedImage1']
 
-  if 'updatedImage2' in request.files:
-    image2 = request.files['updatedImage2']
+  # if 'updatedImage2' in request.files:
+  #   image2 = request.files['updatedImage2']
 
-  if 'updatedImage3' in request.files:
-    image3 = request.files['updatedImage3']
+  # if 'updatedImage3' in request.files:
+  #   image3 = request.files['updatedImage3']
 
 
-  if image1 != None and allowed_image(image1.filename):
-    filename1 = secure_filename(image1.filename)
-    image1.save(os.path.join('client/public/images', filename1))
+  # if image1 != None and allowed_image(image1.filename):
+  #   filename1 = secure_filename(image1.filename)
+  #   image1.save(os.path.join('client/public/images', filename1))
 
-  if image2 != None and allowed_image(image2.filename):
-    filename2 = secure_filename(image2.filename)
-    image2.save(os.path.join('client/public/images', filename2))
+  # if image2 != None and allowed_image(image2.filename):
+  #   filename2 = secure_filename(image2.filename)
+  #   image2.save(os.path.join('client/public/images', filename2))
 
-  if image3 != None and allowed_image(image3.filename):
-    filename3 = secure_filename(image3.filename)
-    image3.save(os.path.join('client/public/images', filename3))
+  # if image3 != None and allowed_image(image3.filename):
+  #   filename3 = secure_filename(image3.filename)
+  #   image3.save(os.path.join('client/public/images', filename3))
 
 
 
@@ -2373,20 +2448,20 @@ def update_customer(id):
   customer_to_update.carModel = carModel
   customer_to_update.service = service
   customer_to_update.price = price
-  if image1 != None:
-    customer_to_update.image1 = filename1
-  else:
-    customer_to_update.image1 = oldImage1
+  # if image1 != None:
+  #   customer_to_update.image1 = filename1
+  # else:
+  #   customer_to_update.image1 = oldImage1
 
-  if image2 != None:
-    customer_to_update.image2 = filename2
-  else:
-    customer_to_update.image2 = oldImage2
+  # if image2 != None:
+  #   customer_to_update.image2 = filename2
+  # else:
+  #   customer_to_update.image2 = oldImage2
 
-  if image3 != None:
-    customer_to_update.image3 = filename3
-  else:
-    customer_to_update.image3 = oldImage3
+  # if image3 != None:
+  #   customer_to_update.image3 = filename3
+  # else:
+  #   customer_to_update.image3 = oldImage3
 
 
 
@@ -2516,6 +2591,99 @@ def delete_branch(id):
 
 
 
+
+
+#==============================================================================================================:
+# ===================================> Car Brands & Models API Management Routes <===========================================:
+#==============================================================================================================:
+
+#                                   Get all Car Brands & Models from database API:
+
+@app.route("/api/carBMs/get" , methods=["GET"])
+def carBrands_Models():
+
+  # get all carBrands:
+  all_carBrands = CarBrands_Models.query.order_by(CarBrands_Models.id).all()
+  results = carBrands_schema.dump(all_carBrands)
+  return jsonify(results)
+
+
+
+
+@app.route("/api/carBM/get/<id>/" , methods=["GET"])
+def carBrands_Model(id):
+
+  # get one carBrand:
+  carBrand = CarBrands_Models.query.get(id)
+  results = carBrand_schema.dump(carBrand)
+  return jsonify(results)
+
+
+
+# =============================================================================================================
+
+#                         Add New CarBM in the database through an API route:
+
+
+
+
+@app.route('/api/AddCarBM' , methods=['POST'])
+def add_carBM():
+  data = request.get_json()
+
+  brand = data.get('carBrand')
+  model = data.get('carModel')
+  branchID = data.get('branchID')
+
+
+  new_carBM = CarBrands_Models(brand=brand, model=model, branchID=branchID)
+  db.session.add(new_carBM)
+  db.session.commit()
+
+
+  return carBrand_schema.jsonify(new_carBM)
+
+
+
+
+# ==============================================================================================================
+
+#                               Updating a CarBM (PUT Request) API route:
+
+@app.route('/api/carBM/update/<id>/' , methods=['PUT'])
+def update_carBM(id):
+  carBM_to_update = CarBrands_Models.query.get(id)
+
+  data = request.get_json()
+  brand = data.get('updatedBrand')
+  model = data.get('updatedModel')
+
+  # If there is no carBM with that id, it sends back a error message saying "User Not Found".
+  if not carBM_to_update:
+    return jsonify({"error": "Car Brand/Model Not Found"}), 404
+
+  carBM_to_update.brand = brand
+  carBM_to_update.model  = model
+
+  # Saves the changes to the database.
+  db.session.commit()
+
+  return carBrand_schema.jsonify(carBM_to_update)
+
+
+
+# ==============================================================================================================
+
+#                              Deleting a CarBM (DELETE Request) API route:
+
+@app.route('/api/carBM/delete/<id>/' , methods=['DELETE'])
+def delete_carBM(id):
+  carBM_to_delete = CarBrands_Models.query.get(id)
+
+  db.session.delete(carBM_to_delete)
+  db.session.commit()
+
+  return carBrand_schema.jsonify(carBM_to_delete)
 
 
 
@@ -2753,6 +2921,9 @@ def download_pdf_invoice():
                 'Customer',
                 'Date',
                 'Service',
+                'Car brand',
+                'Car model',
+                'License plate'
                 'Price',
                 ]]
 
@@ -2761,6 +2932,9 @@ def download_pdf_invoice():
                         row['customer'],
                         row['date'],
                         row['service'],
+                        row['carBrand'],
+                        row['carModel'],
+                        row['licensePlate'],
                         row['price'],
                         ])
 
