@@ -1,5 +1,5 @@
 import json
-from flask import Flask, make_response, render_template, redirect, session, url_for, flash, g, request, jsonify, abort, send_file, current_app, Response
+from flask import Flask, make_response, render_template, redirect, session, url_for, flash, g, request, jsonify, abort, send_file, current_app, Response, send_from_directory
 from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -492,6 +492,10 @@ def before_request():
     g.id = session["user_id"]
 
 
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def catch_all(path):
+  return send_from_directory('client/dist', 'index.html' if path == '' else path)
 
 
 
