@@ -4,9 +4,12 @@
     <meta charset="utf-8">
     <title>Nano Meikki Dashboard</title>
     <script type="text/javascript">
-      var l = window.location;
-      var newPath = l.pathname.split('/').slice(1).join('/');
-      window.location.replace(`${l.origin}/${newPath}`);
+      const url = new URL(window.location.href);
+      const pathname = url.pathname.split('/').slice(1).join('/'); // remove leading slash
+      const newUrl = `${url.origin}/${pathname}`;
+      if (window.location.href!== newUrl) {
+        window.location.replace(newUrl);
+      }
     </script>
   </head>
   <body>
