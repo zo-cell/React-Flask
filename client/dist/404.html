@@ -4,18 +4,10 @@
     <meta charset="utf-8">
     <title>Nano Meikki Dashboard</title>
     <script type="text/javascript">
-
-      var pathSegmentsToKeep = 1;
-
-      var l = window.location;
-      l.replace(
-        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-        l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
-        l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, l) +
-        (l.search ? '&' + l.search.slice(1).replace(/&/g, l) : '') +
-        l.hash
-      );
-
+      const url = new URL(window.location.href);
+      const pathname = url.pathname.split('/').slice(1).join('/'); // remove leading slash
+      const newUrl = `${url.origin}/${pathname}?/${pathname}${url.search}${url.hash}`;
+      window.location.replace(newUrl);
     </script>
   </head>
   <body>
