@@ -4,25 +4,9 @@
     <meta charset="utf-8">
     <title>Nano Meikki Dashboard</title>
     <script type="text/javascript">
-      const url = new URL(window.location.href);
-      const pathname = url.pathname.split('/').slice(1); // remove leading slash
-      const branchId = pathname[0]; // get the branch ID (e.g., "1", "2", "3", etc.)
-
-      const isLoggedIn = localStorage.getItem('ec.');/* check if user is logged in */ // implement your login check logic here
-      let redirectUrl;
-
-      if (!isLoggedIn)
-        redirectUrl = '/login';
-       else if (branchId) {
-        const page = pathname[1]; // get the page (e.g., "members", "orders", etc.)
-        if (page)
-          redirectUrl = `/${branchId}/${page}`; // redirect to original page (e.g., /1/members, /2/members, etc.)
-         else
-          redirectUrl = `/${branchId}`; // redirect to branch homepage (e.g., /1, /2, /3, etc.)
-       } else
-        redirectUrl = '/'; // redirect to root URL (which should redirect to a default branch or login page)
-
-      window.location.replace(redirectUrl);
+      var l = window.location;
+      var newPath = '/';
+      window.location.replace(`${newPath}`);
     </script>
   </head>
   <body>
